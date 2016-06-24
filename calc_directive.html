@@ -1,0 +1,29 @@
+    <div ng-controller="MainCtrl" class="calc">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+				<input type="text" ng-model="resultado" class="resultado col-md-8"/> 
+				<p class="col-md-2 currency">{{currency}}</p>
+				<p class="col-md-2 currency">Alicuota: {{monto_alicouta}}</p>
+				</div>
+				<div class="row">			
+						<div class="col-md-6">
+							<div class="row">
+							  <button ng-repeat="n in btns_numeros" ng-click="calcular(n)" class="col-md-4">{{n}}</button>
+							</div>
+						</div>
+		  
+						<div class="col-md-3">
+							<div class="row">
+							  <button ng-repeat="n in btns_operadores" ng-click="calcular(n)" class="col-md-6">{{n}}</button>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="row">
+							  <button ng-repeat="n in btns_operadores_ls" ng-click="calcular(n)" class="col-md-6">{{n}}</button>
+							</div>
+						</div>
+				 </div>
+			</div>
+		</div>		
+    </div>

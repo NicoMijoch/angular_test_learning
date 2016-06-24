@@ -1,0 +1,167 @@
+<!doctype html>
+<html ng-app="calcApp">
+  <head>
+    <title>Calculadora</title>
+    <script src="./bower_components/angular/angular.js?v=1.0"></script>
+	<script src="./bower_components/angular-route/angular-route.js"></script>
+	<script src="./bower_components/jquery/dist/jquery.js"></script>
+	<script src="./bower_components/bootstrap/dist/js/bootstrap.js"></script>
+	
+	<link href="./bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="./bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="./bower_components/animate.css/animate.min.css" rel="stylesheet">
+	
+    <script>
+      angular
+        .module('calcApp', ['ngRoute'])
+        .config(function($routeProvider){
+		$routeProvider
+			.when('/',{
+				templateUrl:'./main.html',
+				controller:'MainCtrl'
+			})
+			.otherwise('./index.html')
+		})
+		.controller('MainCtrl', function($scope, $rootScope, $log){
+			//Movido a la directiva para separar la logica de negocio y hacerlo reusable.
+         })
+		.directive('calculadora', function($log, CalcServ, LS){
+			return {
+				templateUrl:function() { return "./calc_directive.html?" + new Date(); },
+				restrict:"EA",
+				scope:true,
+				link:function(scope, element, attrs){
+					scope.resultado = "";
+					scope.btns_numeros = "1234567890".split("");
+					scope.btns_operadores = "/*-+=C".split("");
+					scope.btns_operadores_ls = "LsGet,LsDelete,LsClear".split(",");
+					scope.currency = attrs.moneda;
+					scope.calcular = function(n){
+						$log.log(n);			
+						if(n === "="){
+							scope.resultado = CalcServ.evaluar(scope.resultado);
+							scope.monto_alicouta=CalcServ.calculariva(scope.resultado);
+						} else if (n === "C"){
+							scope.resultado = "";
+						} else {
+							scope.resultado+=n;
+						}
+					}
+					scope.$watch('resultado', function(oldVal, newVal){
+						$log.log("resultado cambio...", scope.resultado);
+						LS.set('res', scope.resultado);
+					});
+					
+					
+					scope.calcularDollar= function(){
+						if(attrs.moneda === "$") {
+							alert("U$D:" + (scope.resultado * 14.37));
+						}
+					}
+					
+				}
+			}
+		 })
+		.factory('CalcServ', function($http, $q, $log){
+			var obj = {};
+			alicuotaRes = 0;
+			obj.alicuota = function(){	
+				var deferred = $q.defer();	
+				
+				var temp = {};				
+				//var alicuotasJson = $http.get("./iva.json");
+				$http({
+				  method: 'GET',
+				  url: './iva.json?v=1' + new Date() 
+				}).then(function successCallback(response) {
+					// this callback will be called asynchronously
+					// when the response is available
+					temp = response;
+					var alicuota = response.data.valor;								
+					deferred.resolve(alicuota);
+				  }, function errorCallback(response) {
+					// called asynchronously if an error occurs
+					// or server returns response with an error status.
+					deferred.reject("Falló el calculo: "+response);							
+				  });
+				
+				deferred.promise.then(function(alicuota){							
+							alicuotaRes = alicuota;
+						});	
+			}
+			return {
+				evaluar: function(expr){ return eval(expr); },
+				alcuadrado: function(expr){ return expr * expr },
+				calculariva: function(expr){ 
+					obj.alicuota();
+					//Asigno el valor de la alicuota a la variable interna (podría omitirse).
+					var alicuota = alicuotaRes;
+					$log.log("Alicuota:" + alicuota);
+					res = expr * alicuota;
+					$log.log("Result_ins:"+res);	
+					return res;
+				}
+			}
+		 })
+		.factory('LS', function($window){
+			return {
+				set: function(clave,valor){ $window.localStorage.setItem(clave,valor); },
+				get: function(clave){ $window.localStorage.getItem(clave); },
+				clear: function(){ $window.localStorage.clear(); },
+				delete: function(clave){ $window.localStorage.removeItem(clave); }
+			}
+		 })
+        .run(function($rootScope){
+          $rootScope.mensaje = "ANGULARJS";
+        });
+    </script>
+	
+    <style>
+	input.resultado {
+		margin-bottom: 8px; 
+	}
+    input.ng-touched {
+      border: 1px solid black;
+    }
+    ul { 
+		list-style: none;
+		display: inline-block;
+	}
+    ul li {
+      display: inline-block;
+    }
+    ul li.left {
+      float: left;
+    }
+    ul li.limpiar {
+      background-color: red;
+      clear: both;
+    }	
+	.calc {
+		margin:10px 10px 10px 10px;
+		padding:10px 20px 10px 20px;
+		border-style: solid;
+		border-width: 1px 1px 1px 1px;
+	}
+    </style>
+  </head>
+  <body>
+  <div class="head"></div>
+  <div class="body">
+		<div class="h1">
+			Calculadoras
+		</div>
+		<div class="container-fluid">
+			<div class="row">
+			<calculadora class="col-xs-2 col-md-4" id="peso_arg" data-moneda="$"></calculadora>
+			<!-- <div style="clear:both"></div> -->
+			<div id="peso_urg" calculadora class="col-xs-4 col-md-4"></div>
+			<!-- <div style="clear:both"></div> -->
+			<div calculadora id="dollar_usa" data-moneda="U$D" class="col-xs-4 col-md-4"></div>
+			</div>
+		</div>
+		<div ng-view>Cargando...</div>
+  </div>
+  <div class="footer"></div>
+  </body>
+</html>
