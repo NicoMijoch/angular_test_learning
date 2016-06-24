@@ -6,11 +6,11 @@
 	<script src="./bower_components/angular-route/angular-route.js"></script>
 	<script src="./bower_components/jquery/dist/jquery.js"></script>
 	<script src="./bower_components/bootstrap/dist/js/bootstrap.js"></script>
-	
+
 	<link href="./bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="./bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 	<link href="./bower_components/animate.css/animate.min.css" rel="stylesheet">
-	
+
     <script>
       angular
         .module('calcApp', ['ngRoute'])
@@ -37,10 +37,12 @@
 					scope.btns_operadores_ls = "LsGet,LsDelete,LsClear".split(",");
 					scope.currency = attrs.moneda;
 					scope.calcular = function(n){
-						$log.log(n);			
+						$log.log(n);
 						if(n === "="){
 							scope.resultado = CalcServ.evaluar(scope.resultado);
-							scope.monto_alicouta=CalcServ.calculariva(scope.resultado);
+              CalcServ.calculariva(scope.resultado).then(function(data){
+							  scope.monto_alicouta= data;
+              });
 						} else if (n === "C"){
 							scope.resultado = "";
 						} else {
@@ -51,55 +53,59 @@
 						$log.log("resultado cambio...", scope.resultado);
 						LS.set('res', scope.resultado);
 					});
-					
-					
+
+
 					scope.calcularDollar= function(){
 						if(attrs.moneda === "$") {
 							alert("U$D:" + (scope.resultado * 14.37));
 						}
 					}
-					
+
 				}
 			}
 		 })
 		.factory('CalcServ', function($http, $q, $log){
 			var obj = {};
 			alicuotaRes = 0;
-			obj.alicuota = function(){	
-				var deferred = $q.defer();	
-				
-				var temp = {};				
+			obj.alicuota = function(){
+				var deferred = $q.defer();
+
+				var temp = {};
 				//var alicuotasJson = $http.get("./iva.json");
 				$http({
 				  method: 'GET',
-				  url: './iva.json?v=1' + new Date() 
+				  url: './iva.json?v=1' + new Date()
 				}).then(function successCallback(response) {
 					// this callback will be called asynchronously
 					// when the response is available
 					temp = response;
-					var alicuota = response.data.valor;								
+					var alicuota = response.data.valor;
 					deferred.resolve(alicuota);
 				  }, function errorCallback(response) {
 					// called asynchronously if an error occurs
 					// or server returns response with an error status.
-					deferred.reject("Falló el calculo: "+response);							
+					deferred.reject("Falló el calculo: "+response);
 				  });
-				
-				deferred.promise.then(function(alicuota){							
-							alicuotaRes = alicuota;
-						});	
+
+        return deferred.promise;
 			}
 			return {
 				evaluar: function(expr){ return eval(expr); },
 				alcuadrado: function(expr){ return expr * expr },
-				calculariva: function(expr){ 
-					obj.alicuota();
-					//Asigno el valor de la alicuota a la variable interna (podría omitirse).
-					var alicuota = alicuotaRes;
-					$log.log("Alicuota:" + alicuota);
-					res = expr * alicuota;
-					$log.log("Result_ins:"+res);	
-					return res;
+				calculariva: function(expr){
+          var prom = $q.defer();
+					obj.alicuota().then(function(alicuota){
+							alicuotaRes = alicuota;
+              //Asigno el valor de la alicuota a la variable interna (podría omitirse).
+              var alicuota = alicuotaRes;
+              $log.log("Alicuota:" + alicuota);
+              res = expr * alicuota;
+              $log.log("Result_ins:"+res);
+              //return res;
+              prom.resolve(res);
+          });
+
+          return prom.promise;
 				}
 			}
 		 })
@@ -115,15 +121,15 @@
           $rootScope.mensaje = "ANGULARJS";
         });
     </script>
-	
+
     <style>
 	input.resultado {
-		margin-bottom: 8px; 
+		margin-bottom: 8px;
 	}
     input.ng-touched {
       border: 1px solid black;
     }
-    ul { 
+    ul {
 		list-style: none;
 		display: inline-block;
 	}
@@ -136,7 +142,7 @@
     ul li.limpiar {
       background-color: red;
       clear: both;
-    }	
+    }
 	.calc {
 		margin:10px 10px 10px 10px;
 		padding:10px 20px 10px 20px;
