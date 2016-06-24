@@ -10,7 +10,8 @@
 	<link href="./bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="./bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 	<link href="./bower_components/animate.css/animate.min.css" rel="stylesheet">
-
+	<link href="./custom.css" rel="stylesheet">
+	
     <script>
       angular
         .module('calcApp', ['ngRoute'])
@@ -40,9 +41,9 @@
 						$log.log(n);
 						if(n === "="){
 							scope.resultado = CalcServ.evaluar(scope.resultado);
-              CalcServ.calculariva(scope.resultado).then(function(data){
-							  scope.monto_alicouta= data;
-              });
+							CalcServ.calculariva(scope.resultado).then(function(data){
+								scope.monto_alicouta= data;
+							  });
 						} else if (n === "C"){
 							scope.resultado = "";
 						} else {
@@ -56,8 +57,12 @@
 
 
 					scope.calcularDollar= function(){
-						if(attrs.moneda === "$") {
-							alert("U$D:" + (scope.resultado * 14.37));
+						if(attrs.moneda != null){
+							if(attrs.moneda === "$") {
+								alert("U$D:" + (scope.resultado * 14.37));
+							}
+						} else {
+							scope.moneda = "N/A"
 						}
 					}
 
@@ -69,7 +74,6 @@
 			alicuotaRes = 0;
 			obj.alicuota = function(){
 				var deferred = $q.defer();
-
 				var temp = {};
 				//var alicuotasJson = $http.get("./iva.json");
 				$http({
@@ -87,25 +91,24 @@
 					deferred.reject("Falló el calculo: "+response);
 				  });
 
-        return deferred.promise;
+				return deferred.promise;
 			}
 			return {
 				evaluar: function(expr){ return eval(expr); },
 				alcuadrado: function(expr){ return expr * expr },
 				calculariva: function(expr){
-          var prom = $q.defer();
+					var prom = $q.defer();
 					obj.alicuota().then(function(alicuota){
-							alicuotaRes = alicuota;
-              //Asigno el valor de la alicuota a la variable interna (podría omitirse).
-              var alicuota = alicuotaRes;
-              $log.log("Alicuota:" + alicuota);
-              res = expr * alicuota;
-              $log.log("Result_ins:"+res);
-              //return res;
-              prom.resolve(res);
-          });
-
-          return prom.promise;
+						alicuotaRes = alicuota;
+						//Asigno el valor de la alicuota a la variable interna (podría omitirse).
+						var alicuota = alicuotaRes;
+						$log.log("Alicuota:" + alicuota);
+						res = expr * alicuota;
+						$log.log("Result_ins:"+res);
+						//return res;
+						prom.resolve(res);
+					});
+					return prom.promise;
 				}
 			}
 		 })
@@ -121,35 +124,6 @@
           $rootScope.mensaje = "ANGULARJS";
         });
     </script>
-
-    <style>
-	input.resultado {
-		margin-bottom: 8px;
-	}
-    input.ng-touched {
-      border: 1px solid black;
-    }
-    ul {
-		list-style: none;
-		display: inline-block;
-	}
-    ul li {
-      display: inline-block;
-    }
-    ul li.left {
-      float: left;
-    }
-    ul li.limpiar {
-      background-color: red;
-      clear: both;
-    }
-	.calc {
-		margin:10px 10px 10px 10px;
-		padding:10px 20px 10px 20px;
-		border-style: solid;
-		border-width: 1px 1px 1px 1px;
-	}
-    </style>
   </head>
   <body>
   <div class="head"></div>
@@ -161,7 +135,7 @@
 			<div class="row">
 			<calculadora class="col-xs-2 col-md-4" id="peso_arg" data-moneda="$"></calculadora>
 			<!-- <div style="clear:both"></div> -->
-			<div id="peso_urg" calculadora class="col-xs-4 col-md-4"></div>
+			<div id="peso_urg" calculadora class="col-xs-4 col-md-4" data-moneda=""></div>
 			<!-- <div style="clear:both"></div> -->
 			<div calculadora id="dollar_usa" data-moneda="U$D" class="col-xs-4 col-md-4"></div>
 			</div>

@@ -1,0 +1,1 @@
+http-server >> D:\Users\zzj019\TRAINING\Angular\http_server_logs\out.log
