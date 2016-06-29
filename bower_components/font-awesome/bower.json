@@ -18,5 +18,11 @@
     "Gemfile",
     "Gemfile.lock",
     "*.md"
-  ]
+  ],
+  "exportOverride": {
+    "font-awesome": {
+      "fonts": "fonts/*",
+      "css": "css/font-awesome.css"
+    }
+  }
 }

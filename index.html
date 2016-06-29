@@ -18,13 +18,23 @@
         .config(function($routeProvider){
 		$routeProvider
 			.when('/',{
-				templateUrl:'./main.html',
+				templateUrl:'views/main.html',
 				controller:'MainCtrl'
 			})
-			.otherwise('./index.html')
+			.when('/About',{
+				templateUrl:'views/about.html',
+				controller:'AboutCtrl'
+			})
+			.otherwise('views/default.html')
 		})
 		.controller('MainCtrl', function($scope, $rootScope, $log){
 			//Movido a la directiva para separar la logica de negocio y hacerlo reusable.
+			$scope.message = 'This is showing the MainCtrl';
+         })
+		 
+		.controller('AboutCtrl', function($scope, $rootScope, $log){
+			//Creado para representar la navegación y poder renderizar la vista about.html.
+			$scope.message = 'This is showing the AboutCtrl';
          })
 		.directive('calculadora', function($log, CalcServ, LS){
 			return {
@@ -128,19 +138,35 @@
   <body>
   <div class="head"></div>
   <div class="body">
+		<!-- ngRoute Example. -->
+		<div class="container">
+			<div class="row">
+				<div class="col-md-3">
+					<ul class="nav">
+						<li><a href="#/"> Main </a></li>
+						<li><a href="#About"> About </a></li>
+					</ul>
+				</div>
+				<div class="col-md-9">
+					<div ng-view>Cargando...</div>
+				</div>
+			</div>
+		</div>
+		<!-- END - ngRoute Example. -->
+		<!-- Moved to main template 
 		<div class="h1">
 			Calculadoras
 		</div>
 		<div class="container-fluid">
 			<div class="row">
 			<calculadora class="col-xs-2 col-md-4" id="peso_arg" data-moneda="$"></calculadora>
-			<!-- <div style="clear:both"></div> -->
+		
 			<div id="peso_urg" calculadora class="col-xs-4 col-md-4" data-moneda=""></div>
-			<!-- <div style="clear:both"></div> -->
+		
 			<div calculadora id="dollar_usa" data-moneda="U$D" class="col-xs-4 col-md-4"></div>
 			</div>
-		</div>
-		<div ng-view>Cargando...</div>
+		</div>	
+		-->
   </div>
   <div class="footer"></div>
   </body>

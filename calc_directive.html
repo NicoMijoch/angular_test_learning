@@ -12,14 +12,14 @@
 							</div>
 						</div>
 		  
-						<div class="col-md-3">
+						<div class="col-md-4">
 							<div class="row">
 							  <button ng-repeat="n in btns_operadores" ng-click="calcular(n)" class="col-md-6">{{n}}</button>
 							</div>
 						</div>
-						<div class="col-md-3">
+						<div class="col-md-2">
 							<div class="row">
-							  <button ng-repeat="n in btns_operadores_ls" ng-click="calcular(n)" class ="col-md-12"><i ng-class="{'fa-search':n ==='LsGet', 'fa-trash-o':n === 'LsDelete',  ' fa-eraser':n === 'LsClear'}" aria-hidden="true" alt="{{n}}"></i></button>
+							  <button ng-repeat="n in btns_operadores_ls" ng-click="calcular(n)" class ="col-md-12"><i ng-class="{'fa fa-search':n ==='LsGet', 'fa fa-trash-o':n === 'LsDelete',  'fa fa-eraser':n === 'LsClear'}" aria-hidden="true" alt="{{n}}"></i></button>
 							</div>
 						</div>
 				 </div>
